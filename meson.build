@@ -1629,6 +1629,7 @@ update_hwdb_sh = find_program('tools/update-hwdb.sh')
 update_hwdb_autosuspend_sh = find_program('tools/update-hwdb-autosuspend.sh')
 update_syscall_tables_sh = find_program('tools/update-syscall-tables.sh')
 xml_helper_py = find_program('tools/xml_helper.py')
+export_dbus_interfaces = find_program('tools/dbus_exporter.py')
 
 #####################################################################
 
@@ -1868,7 +1869,7 @@ endforeach
 
 ############################################################
 
-executable(
+systemd_exe = executable(
         'systemd',
         systemd_sources,
         include_directories : includes,
@@ -3725,6 +3726,19 @@ custom_target(
                    'python3 @0@/tools/update-man-rules.py $(find @0@ -wholename "*/man/*.xml") >t && '.format(project_source_root) +
                    'mv t @0@/man/rules/meson.build'.format(meson.current_source_dir())],
         depends : custom_entities_ent)
+
+custom_target(
+	'export-dbus-interfaces',
+	output : 'interfaces',
+        install : true,
+        install_dir : get_option('datadir') / 'dbus-1',
+	console : true,
+	command : [
+		export_dbus_interfaces,
+		'--output', '@OUTPUT@',
+                '--executables', systemd_exe,
+	]
+)
 
 ############################################################
 watchdog_opt = service_watchdog == '' ? 'disabled' : service_watchdog
